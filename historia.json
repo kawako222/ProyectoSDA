@@ -1,0 +1,34 @@
+{
+    "inicio": {
+        "texto": "Despiertas en una habitación fría. No recuerdas cómo llegaste aquí. Hay una puerta de metal frente a ti y una ventana pequeña a tu derecha.",
+        "opciones": [
+            {"texto": "Intentar abrir la puerta", "destino": "puerta_bloqueada"},
+            {"texto": "Mirar por la ventana", "destino": "mirar_ventana"}
+        ]
+    },
+    "puerta_bloqueada": {
+        "texto": "La puerta está cerrada con un candado digital. Necesitas un código de 4 dígitos. Escuchas pasos acercándose...",
+        "opciones": [
+            {"texto": "Esconderte bajo la cama", "destino": "escondite"},
+            {"texto": "Regresar al centro del cuarto", "destino": "inicio"}
+        ]
+    },
+    "mirar_ventana": {
+        "texto": "A través del cristal sucio, ves una ciudad cyberpunk iluminada por luces de neón. Estás a cientos de metros de altura.",
+        "opciones": [
+            {"texto": "Alejarte de la ventana", "destino": "inicio"}
+        ]
+    },
+    "escondite": {
+        "texto": "Te escondes justo a tiempo. Alguien entra, revisa el cuarto y se va, dejando caer una tarjeta magnética.",
+        "opciones": [
+            {"texto": "Tomar la tarjeta y salir", "destino": "final_bueno"}
+        ]
+    },
+    "final_bueno": {
+        "texto": "¡Lograste escapar usando la tarjeta! \n\nFIN DEL JUEGO.",
+        "opciones": [
+            {"texto": "Volver a jugar", "destino": "inicio"}
+        ]
+    }
+}
