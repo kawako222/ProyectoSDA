@@ -1,5 +1,5 @@
 """
-Simulador de Grafos — Parcial 3
+Simulador de Grafos — Parcial 3 (Edición BT21 Aesthetic)
 Etapa 1: BFS, DFS, Profundidad Limitada, Profundidad Iterativa
 Etapa 2: A* con pesos de terreno (Manhattan y Euclidiana)
 Etapa 3: Kruskal y Prim (MST sobre nodos dispersos)
@@ -22,41 +22,47 @@ FILAS       = 30
 ANCHO_CELDA = ANCHO_MAPA // FILAS
 
 # ══════════════════════════════════════════════════════════════════════════════
-# PALETA
+# PALETA AESTHETIC BT21 (Tonos Pastel)
 # ══════════════════════════════════════════════════════════════════════════════
-BG_APP   = (20,  22,  32 )
-BG_PANEL = (28,  30,  42 )
-BG_CARD  = (40,  43,  58 )
-ACCENT   = (255, 200, 60 )
-ACCENT2  = (80,  200, 255)
-ACCENT3  = (120, 255, 160)
-TEXT_MN  = (220, 220, 230)
-TEXT_DIM = (120, 120, 140)
-LINE_C   = (55,  58,  75 )
+BG_APP   = (250, 242, 255)  # Lila muy claro (Fondo principal)
+BG_PANEL = (245, 235, 250)  # Rosa lila suave (Panel lateral)
+BG_CARD  = (255, 255, 255)  # Blanco puro (Botones no activos)
+ACCENT   = (255, 140, 180)  # Rosa pastel vibrante
+ACCENT2  = (140, 200, 255)  # Azul cielo pastel
+ACCENT3  = (150, 230, 180)  # Verde menta pastel
+TEXT_MN  = (90,  75,  100)  # Morado oscuro (Texto principal)
+TEXT_DIM = (160, 145, 170)  # Morado grisáceo (Texto secundario)
+LINE_C   = (235, 220, 245)  # Líneas separadoras lila claro
 
-C_LIBRE  = (240, 241, 245)
-C_MURO   = (18,  20,  28 )
-C_LODO   = (110, 68,  18 )
-C_INICIO = (40,  210, 80 )
-C_FIN    = (215, 45,  45 )
-C_CAMINO = (255, 210, 0  )
-C_GRID   = (195, 196, 208)
+C_LIBRE  = (255, 250, 255)  # Casi blanco para celdas libres
+C_MURO   = (100,  90, 110)  # Color base de muro (si no hay imagen)
+C_LODO   = (200, 160, 140)  # Color base de lodo (si no hay imagen)
+C_INICIO = (140, 230, 160)  # Verde pastel
+C_FIN    = (255, 120, 120)  # Rojo/Rosa pastel
+C_CAMINO = (255,  20, 147)  # Rosa Brillante (Hot Pink) para el camino final
+C_GRID   = (235, 225, 245)  # Cuadrícula lila muy sutil
 
-# Colores de exploración — uno distinto por algoritmo
-C_BFS  = (100, 180, 255)   # azul
-C_DFS  = (190, 110, 255)   # violeta
-C_DLS  = (255, 155, 55 )   # naranja
-C_IDA  = (55,  215, 175)   # turquesa
-C_ASTR = (255, 95,  160)   # rosa
+# Colores de exploración (Tonos pastel)
+C_BFS  = (180, 220, 255)   # Azul bebé
+C_DFS  = (220, 180, 255)   # Lila pastel
+C_DLS  = (255, 200, 150)   # Durazno pastel
+C_IDA  = (160, 240, 220)   # Menta claro
+C_ASTR = (255, 180, 220)   # Rosa pastel
 
 # MST
-C_NODO_MST = (255, 200, 60)
-C_ARI_PRIM = (80,  200, 255)
-C_ARI_KRUS = (255, 115, 75 )
-C_ARI_GRAY = (65,  68,  85 )
+C_NODO_MST = (255, 180, 220)
+C_ARI_PRIM = (140, 200, 255)
+C_ARI_KRUS = (255, 160, 180)
+C_ARI_GRAY = (200, 190, 210)
+
+# Variables globales para las imágenes
+IMG_TATA = None
+IMG_COOKY = None
+IMG_SHOOKY = None
+IMG_RJ = None
 
 # ══════════════════════════════════════════════════════════════════════════════
-# UNION-FIND
+# UNION-FIND (Lógica Intocable)
 # ══════════════════════════════════════════════════════════════════════════════
 class UnionFind:
     def __init__(self, n):
@@ -77,7 +83,7 @@ class UnionFind:
         return True
 
 # ══════════════════════════════════════════════════════════════════════════════
-# NODO CUADRÍCULA
+# NODO CUADRÍCULA (Modificado para soportar imágenes sin alterar lógica)
 # ══════════════════════════════════════════════════════════════════════════════
 class Nodo:
     def __init__(self, fila, col):
@@ -103,12 +109,24 @@ class Nodo:
         if not self.es_especial(): self.color = C_CAMINO
 
     def dibujar(self, v):
-        pygame.draw.rect(v, self.color,
-                         (self.fila*ANCHO_CELDA, self.col*ANCHO_CELDA,
-                          ANCHO_CELDA, ANCHO_CELDA))
+        x = self.fila * ANCHO_CELDA
+        y = self.col * ANCHO_CELDA
+        
+        # 1. Dibujar el color de fondo (necesario para el camino o color base)
+        pygame.draw.rect(v, self.color, (x, y, ANCHO_CELDA, ANCHO_CELDA))
+        
+        # 2. Renderizar imágenes de BT21 por encima si aplican y están cargadas
+        if self.es_inicio() and IMG_TATA:
+            v.blit(IMG_TATA, (x, y))
+        elif self.es_fin() and IMG_COOKY:
+            v.blit(IMG_COOKY, (x, y))
+        elif self.es_muro() and IMG_SHOOKY:
+            v.blit(IMG_SHOOKY, (x, y))
+        elif self.costo == 5 and IMG_RJ:
+            v.blit(IMG_RJ, (x, y))
 
 # ══════════════════════════════════════════════════════════════════════════════
-# UTILIDADES DE CUADRÍCULA
+# UTILIDADES DE CUADRÍCULA (Lógica Intocable)
 # ══════════════════════════════════════════════════════════════════════════════
 def crear_cuadricula():
     return [[Nodo(f, c) for c in range(FILAS)] for f in range(FILAS)]
@@ -158,7 +176,7 @@ stats = {"algo":"—","visitados":0,"costo":0,"estado":"Listo",
          "limite_d":5,"comparativa":[]}
 
 # ══════════════════════════════════════════════════════════════════════════════
-# ALGORITMOS — ETAPA 1
+# ALGORITMOS — ETAPAS 1, 2 Y 3 (Lógica Intocable)
 # ══════════════════════════════════════════════════════════════════════════════
 def _chk():
     for ev in pygame.event.get():
@@ -234,9 +252,6 @@ def iddfs(grid, ini, fin, draw):
         limpiar_busqueda(grid, ini, fin); ini.hacer_inicio(); fin.hacer_fin()
     stats["estado"]="Sin camino"; return False
 
-# ══════════════════════════════════════════════════════════════════════════════
-# ALGORITMOS — ETAPA 2
-# ══════════════════════════════════════════════════════════════════════════════
 def h(a, b, modo):
     if modo=="manhattan": return abs(a.fila-b.fila)+abs(a.col-b.col)
     return math.hypot(a.fila-b.fila, a.col-b.col)
@@ -262,17 +277,14 @@ def a_star(grid, ini, fin, draw, modo="manhattan"):
         draw(); pygame.time.delay(5)
     stats["estado"]="Sin camino"; return False
 
-# ══════════════════════════════════════════════════════════════════════════════
-# ALGORITMOS — ETAPA 3 (MST)
-# ══════════════════════════════════════════════════════════════════════════════
 class NodoMST:
     def __init__(self, px, py, idx):
         self.px=px; self.py=py; self.idx=idx
 
     def dibujar(self, surf, fuente):
         pygame.draw.circle(surf, C_NODO_MST, (self.px,self.py), 11)
-        pygame.draw.circle(surf, (0,0,0),    (self.px,self.py), 11, 2)
-        t = fuente.render(str(self.idx), True, (0,0,0))
+        pygame.draw.circle(surf, TEXT_MN,    (self.px,self.py), 11, 2)
+        t = fuente.render(str(self.idx), True, TEXT_MN)
         surf.blit(t, (self.px-t.get_width()//2, self.py-t.get_height()//2))
 
 def dist_mst(a, b): return math.hypot(a.px-b.px, a.py-b.py)
@@ -317,12 +329,12 @@ def dibujar_panel(ventana, fb, fn, fs, etapa, limite_d):
         pygame.draw.line(ventana, LINE_C, (px+8,y), (px+ANCHO_PANEL-8,y))
 
     # ── Título
-    blit("SIMULADOR DE GRAFOS", 10, ACCENT, fb)
+    blit("SIMULADOR BT21 AESTHETIC", 10, ACCENT, fb)
     linea(30)
 
     # ── Etapa
     nombres = {1:"Etapa 1 · Exploración ciega",
-               2:"Etapa 2 · A* inteligente",
+               2:"Etapa 2 · A* Inteligente",
                3:"Etapa 3 · MST"}
     blit(nombres[etapa], 36, ACCENT2, fs)
     linea(52)
@@ -346,9 +358,9 @@ def dibujar_panel(ventana, fb, fn, fs, etapa, limite_d):
     # ── Controles generales
     blit("CONTROLES GENERALES", 218, ACCENT, fb)
     controles_gral = [
-        ("Clic Izq",  "Muro          (Etapas 1-2)"),
-        ("Clic Der",  "Lodo costo 5  (Etapas 1-2)"),
-        ("Clic Med",  "Borrar celda  (Etapas 1-2)"),
+        ("Clic Izq",  "Shooky / Muro"),
+        ("Clic Der",  "RJ / Lodo (Cost 5)"),
+        ("Clic Med",  "Borrar celda"),
         ("R",         "Reiniciar todo"),
         ("1 / 2 / 3", "Cambiar etapa"),
     ]
@@ -372,7 +384,7 @@ def dibujar_panel(ventana, fb, fn, fs, etapa, limite_d):
         for i,(k,d,c) in enumerate(et1):
             y=330+i*16
             blit(f"  {k:<4}", y, ACCENT, fs)
-            blit(f"      {d}", y, c, fs)
+            blit(f"      {d}", y, c if c != TEXT_DIM else TEXT_MN, fs)
 
     elif etapa == 2:
         blit("ETAPA 2 — A*", 314, ACCENT2, fb)
@@ -385,7 +397,7 @@ def dibujar_panel(ventana, fb, fn, fs, etapa, limite_d):
         for i,(k,d,c) in enumerate(et2):
             y=330+i*16
             blit(f"  {k:<4}", y, ACCENT, fs)
-            blit(f"      {d}", y, c, fs)
+            blit(f"      {d}", y, c if c != TEXT_DIM else TEXT_MN, fs)
 
     else:
         blit("ETAPA 3 — MST", 314, ACCENT2, fb)
@@ -398,7 +410,7 @@ def dibujar_panel(ventana, fb, fn, fs, etapa, limite_d):
         for i,(k,d,c) in enumerate(et3):
             y=330+i*16
             blit(f"  {k:<5}", y, ACCENT, fs)
-            blit(f"       {d}", y, c, fs)
+            blit(f"       {d}", y, c if c != TEXT_DIM else TEXT_MN, fs)
 
     linea(ALTO-90)
 
@@ -409,7 +421,7 @@ def dibujar_panel(ventana, fb, fn, fs, etapa, limite_d):
     for i,(lbl,col) in enumerate(tab_labels):
         bx = px+10+i*bw; by = ALTO-64
         activo = (i+1)==etapa
-        pygame.draw.rect(ventana, BG_CARD if not activo else (55,58,78),
+        pygame.draw.rect(ventana, BG_CARD if not activo else (235, 215, 245),
                          (bx,by,bw-4,26), border_radius=5)
         if activo:
             pygame.draw.rect(ventana, col, (bx,by,bw-4,26), 2, border_radius=5)
@@ -418,9 +430,8 @@ def dibujar_panel(ventana, fb, fn, fs, etapa, limite_d):
 
     linea(ALTO-34)
 
-    # ── Leyenda de colores de celda
-    ley = [(C_INICIO,"Ini"),(C_FIN,"Fin"),(C_MURO,"Muro"),
-           (C_LODO,"Lodo"),(C_CAMINO,"Path")]
+    # ── Leyenda
+    ley = [(C_INICIO,"Tata"),(C_FIN,"Cooky"),(C_MURO,"Shk"),(C_LODO,"RJ"),(C_CAMINO,"Ruta")]
     lw = (ANCHO_PANEL-16)//len(ley)
     for i,(col,nom) in enumerate(ley):
         lx=px+8+i*lw
@@ -443,7 +454,37 @@ def dibujar_grid(ventana, grid):
 def main():
     pygame.init()
     ventana = pygame.display.set_mode((VENTANA_W, ALTO))
-    pygame.display.set_caption("Simulador de Grafos — Parcial 3")
+    pygame.display.set_caption("Simulador BT21 — Búsqueda de Grafos")
+
+    global IMG_TATA, IMG_COOKY, IMG_SHOOKY, IMG_RJ
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # CARGA DE IMÁGENES BT21 (Usa try/except para no crashear si faltan)
+    # ══════════════════════════════════════════════════════════════════════════
+    try:
+        # [AQUÍ IMAGEN]: Carga tu archivo para TATA (Inicio)
+        IMG_TATA = pygame.image.load("./bt21/bt21.png").convert_alpha()
+        IMG_TATA = pygame.transform.scale(IMG_TATA, (ANCHO_CELDA, ANCHO_CELDA))
+    except: pass
+
+    try:
+        # [AQUÍ IMAGEN]: Carga tu archivo para COOKY (Fin)
+        IMG_COOKY = pygame.image.load("./bt21/chimi.png").convert_alpha()
+        IMG_COOKY = pygame.transform.scale(IMG_COOKY, (ANCHO_CELDA, ANCHO_CELDA))
+    except: pass
+
+    try:
+        # [AQUÍ IMAGEN]: Carga tu archivo para SHOOKY (Muros/Negro)
+        IMG_SHOOKY = pygame.image.load("./bt21/jk.png").convert_alpha()
+        IMG_SHOOKY = pygame.transform.scale(IMG_SHOOKY, (ANCHO_CELDA, ANCHO_CELDA))
+    except: pass
+
+    try:
+        # [AQUÍ IMAGEN]: Carga tu archivo para RJ o MANG (Lodo/Café)
+        IMG_RJ = pygame.image.load("./bt21/rj.png").convert_alpha()
+        IMG_RJ = pygame.transform.scale(IMG_RJ, (ANCHO_CELDA, ANCHO_CELDA))
+    except: pass
+    # ══════════════════════════════════════════════════════════════════════════
 
     fb = pygame.font.SysFont("Consolas", 13, bold=True)
     fn = pygame.font.SysFont("Consolas", 12)
@@ -459,22 +500,19 @@ def main():
     aristas_mst = []
     algo_mst    = "—"
 
-    # ── función de dibujado completo ─────────────────────────────────────────
     def dibujar(aris=None, nom_mst="—"):
         ventana.fill(BG_APP)
         if etapa in (1, 2):
             dibujar_grid(ventana, grid)
         else:
-            pygame.draw.rect(ventana, (30,33,46), (0,0,ANCHO_MAPA,ALTO))
-            # todas las aristas posibles (gris)
+            pygame.draw.rect(ventana, (250,242,255), (0,0,ANCHO_MAPA,ALTO))
             for i in range(len(nodos_mst)):
                 for j in range(i+1, len(nodos_mst)):
                     a,b = nodos_mst[i], nodos_mst[j]
                     pygame.draw.line(ventana, C_ARI_GRAY, (a.px,a.py),(b.px,b.py),1)
                     mx=(a.px+b.px)//2; my=(a.py+b.py)//2
                     d=round(dist_mst(a,b),0)
-                    ventana.blit(fs.render(str(int(d)),True,(90,93,110)),(mx,my))
-            # aristas MST
+                    ventana.blit(fs.render(str(int(d)),True,TEXT_DIM),(mx,my))
             if aris:
                 col_ar = C_ARI_PRIM if nom_mst=="Prim" else C_ARI_KRUS
                 for i,j,_ in aris:
@@ -517,7 +555,6 @@ def main():
 
             if ejecutando: continue
 
-            # ── Pintura con mouse ────────────────────────────────────────────
             mb  = pygame.mouse.get_pressed()
             pos = pygame.mouse.get_pos()
 
@@ -533,7 +570,6 @@ def main():
                         nodos_mst.append(NodoMST(pos[0], pos[1], len(nodos_mst)))
                         aristas_mst = []
 
-            # ── Teclado ──────────────────────────────────────────────────────
             if evento.type == pygame.KEYDOWN:
                 k = evento.key
 
